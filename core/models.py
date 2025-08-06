@@ -2,15 +2,15 @@ from django.db import models
 
 
 class Client(models.Model):
-    company_name = models.CharField(max_length=100)
-    Client_name = models.CharField(max_length=100)
+    # company_name = models.CharField(max_length=100)
+    Client_name = models.CharField(max_length=100, default="Unknown Client")
     created_by = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.CharField(max_length=100, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return self.Client_name
+        return self.Client_name 
 
 
 class Project(models.Model):
@@ -31,7 +31,7 @@ class Project(models.Model):
     type = models.CharField(max_length=50, choices=PROJECT_TYPES)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
     start_date = models.DateField()
-    end_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
     hosting_provider = models.CharField(max_length=100)
     github_repo = models.URLField(blank=True, null=True)
     live_url = models.URLField(blank=True, null=True)
@@ -59,7 +59,7 @@ class ProjectCredential(models.Model):
 
 
 class Team(models.Model):
-    team_name = models.CharField(max_length=100)
+    # team_name = models.CharField(max_length=100)
     team_type = models.CharField(max_length=50)
     members = models.ManyToManyField('Member', blank=True)
     created_by = models.CharField(max_length=100)
@@ -68,7 +68,7 @@ class Team(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return self.team_name
+        return self.team_type
 
 
 class Member(models.Model):
@@ -84,16 +84,21 @@ class Member(models.Model):
         return self.name
 
 
+from django.db import models
+
 class MemberAssigned(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    member = models.ForeignKey('Member', on_delete=models.CASCADE)
+    project = models.ForeignKey('Project', on_delete=models.CASCADE)
     assigned_from = models.DateField()
     assigned_to = models.DateField()
     is_active = models.BooleanField(default=True)
+    created_by = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_by = models.CharField(max_length=100, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.member.name}  {self.project.name} ({'Active' if self.is_active else 'Inactive'})"
-
 
 class ProjectActivity(models.Model):
     STATUS_CHOICES = [
@@ -109,6 +114,10 @@ class ProjectActivity(models.Model):
     activity_to = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     remarks = models.TextField(blank=True, null=True)
+    created_by = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_by = models.CharField(max_length=100, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.project.name}  {self.status} ({self.activity_from} to {self.activity_to})"

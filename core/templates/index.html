@@ -1,0 +1,492 @@
+{% comment %}  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PIMS Frontend</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+    h1 {
+      text-align: center;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background-color: #eee;
+    }
+    .loading {
+      text-align: center;
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>PIMS Dashboard</h1>
+  <div class="buttons">
+    <button onclick="loadData('clients')">Clients</button>
+    <button onclick="loadData('projects')">Projects</button>
+    <button onclick="loadData('credentials')">Credentials</button>
+    <button onclick="loadData('teams')">Teams</button>
+    <button onclick="loadData('members')">Members</button>
+    <button onclick="loadData('assigned-members')">Assigned Members</button>
+    <button onclick="loadData('activities')">Activities</button>
+  </div>
+
+  <div class="loading" id="loading" style="display:none">Loading...</div>
+  <div id="table-container"></div>
+
+  <script>
+    const BASE_URL = "http://127.0.0.1:8000/api/";
+
+
+    async function loadData(endpoint) {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('table-container').innerHTML = '';
+      try {
+        const response = await fetch(BASE_URL + endpoint + '/');
+        const data = await response.json();
+        renderTable(data);
+      } catch (err) {
+        document.getElementById('table-container').innerHTML = `<p>Error loading ${endpoint}: ${err.message}</p>`;
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    function renderTable(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById('table-container').innerHTML = "<p>No data available.</p>";
+        return;
+      }
+
+      let table = "<table><thead><tr>";
+      for (let key in data[0]) {
+        table += `<th>${key}</th>`;
+      }
+      table += "</tr></thead><tbody>";
+
+      for (let row of data) {
+        table += "<tr>";
+        for (let key in row) {
+          table += `<td>${row[key]}</td>`;
+        }
+        table += "</tr>";
+      }
+      table += "</tbody></table>";
+
+      document.getElementById('table-container').innerHTML = table;
+    }
+  </script>
+</body>
+</html> {% endcomment %}
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIMS Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-color: #f3f4f6;
+      --text-color: #1e293b;
+      --card-color: white;
+      --button-bg: #1e40af;
+      --button-hover: #1d4ed8;
+    }
+
+    body.dark {
+      --bg-color: #0f172a;
+      --text-color: #e2e8f0;
+      --card-color: #1e293b;
+      --button-bg: #2563eb;
+      --button-hover: #3b82f6;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--card-color);
+      height: 100vh;
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .sidebar h2 {
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+    .sidebar button {
+      background: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      transition: 0.3s;
+    }
+    .sidebar button:hover {
+      background: var(--button-hover);
+    }
+    .toggle-mode {
+      margin-top: auto;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 30px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .loading {
+      margin: 20px;
+      font-size: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: var(--card-color);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ccc;
+    }
+    th {
+      background: var(--button-bg);
+      color: white;
+    }
+    tr:hover {
+      background: #e0e7ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2><i class="fas fa-bars"></i> PIMS</h2>
+    <button onclick="loadData('clients')">Clients</button>
+    <button onclick="loadData('projects')">Projects</button>
+    <button onclick="loadData('credentials')">Credentials</button>
+    <button onclick="loadData('teams')">Teams</button>
+    <button onclick="loadData('members')">Members</button>
+    <button onclick="loadData('assigned-members')">Assigned Members</button>
+    <button onclick="loadData('activities')">Activities</button>
+    <button class="toggle-mode" onclick="toggleMode()">
+      🌙 Dark Mode
+    </button>
+  </div>
+
+  <div class="main-content">
+    <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+    <div id="loading" class="loading" style="display:none">Loading...</div>
+    <div id="table-container"></div>
+  </div>
+
+  <script>
+    const BASE_URL = "http://127.0.0.1:8000/api/";
+
+    async function loadData(endpoint) {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('table-container').innerHTML = '';
+      try {
+        const res = await fetch(BASE_URL + endpoint + '/');
+        const data = await res.json();
+        renderTable(data);
+      } catch (e) {
+        document.getElementById('table-container').innerHTML = `<p>Error: ${e.message}</p>`;
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    function renderTable(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById('table-container').innerHTML = '<p>No data found.</p>';
+        return;
+      }
+
+      let html = '<table><thead><tr>';
+      for (let key in data[0]) html += `<th>${key}</th>`;
+      html += '</tr></thead><tbody>';
+
+      for (let row of data) {
+        html += '<tr>';
+        for (let key in row) html += `<td>${row[key]}</td>`;
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+
+      document.getElementById('table-container').innerHTML = html;
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+</body>
+</html> {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIMS Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-color: #f3f4f6;
+      --text-color: #1e293b;
+      --card-color: white;
+      --button-bg: #1e40af;
+      --button-hover: #1d4ed8;
+      --hover-row: #e0e7ff;
+      --border-color: #d1d5db;
+    }
+
+    body.dark {
+      --bg-color: #0f172a;
+      --text-color: #e2e8f0;
+      --card-color: #1e293b;
+      --button-bg: #2563eb;
+      --button-hover: #3b82f6;
+      --hover-row: #334155;
+      --border-color: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--card-color);
+      height: 100vh;
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .sidebar h2 {
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    .sidebar button {
+      background: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      transition: 0.3s;
+    }
+
+    .sidebar button:hover {
+      background: var(--button-hover);
+    }
+
+    .toggle-mode {
+      margin-top: auto;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 30px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .loading {
+      margin: 20px;
+      font-size: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: var(--card-color);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+    }
+
+    th:last-child, td:last-child {
+      border-right: none;
+    }
+
+    th {
+      background: var(--button-bg);
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: var(--hover-row);
+      transition: 0.3s;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      body {
+        flex-direction: column;
+      }
+
+      .main-content {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2><i class="fas fa-bars"></i> PIMS</h2>
+    <button onclick="loadData('clients')">Clients</button>
+    <button onclick="loadData('projects')">Projects</button>
+    <button onclick="loadData('credentials')">Credentials</button>
+    <button onclick="loadData('teams')">Teams</button>
+    <button onclick="loadData('members')">Members</button>
+    <button onclick="loadData('assigned-members')">Assigned Members</button>
+    <button onclick="loadData('activities')">Activities</button>
+    <button class="toggle-mode" onclick="toggleMode()">
+      🌙 Dark Mode
+    </button>
+  </div>
+
+  <div class="main-content">
+    <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+    <div id="loading" class="loading" style="display:none">Loading...</div>
+    <div id="table-container"></div>
+  </div>
+
+  <script>
+    const BASE_URL = "http://127.0.0.1:8000/api/";
+
+    async function loadData(endpoint) {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('table-container').innerHTML = '';
+      try {
+        const res = await fetch(BASE_URL + endpoint + '/');
+        const data = await res.json();
+        renderTable(data);
+      } catch (e) {
+        document.getElementById('table-container').innerHTML = `<p>Error: ${e.message}</p>`;
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    function renderTable(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById('table-container').innerHTML = '<p>No data found.</p>';
+        return;
+      }
+
+      let html = '<table><thead><tr>';
+      for (let key in data[0]) html += `<th>${key}</th>`;
+      html += '</tr></thead><tbody>';
+
+      for (let row of data) {
+        html += '<tr>';
+        for (let key in row) html += `<td>${row[key]}</td>`;
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+
+      document.getElementById('table-container').innerHTML = html;
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+</body>
+</html>

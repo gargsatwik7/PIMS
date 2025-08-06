@@ -1,0 +1,7 @@
+/api/clients/
+/api/projects/
+/api/credentials/
+/api/teams/
+/api/members/
+/api/assigned-members/
+/api/activities/
