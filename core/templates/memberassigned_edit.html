@@ -1,0 +1,140 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Member Assignment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body {
+      background: linear-gradient(-45deg, #1a1f36, #2a2f4a, #0f172a, #1e293b);
+      background-size: 400% 400%;
+      animation: gradientMove 15s ease infinite;
+      color: white;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #d1d5db;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="date"], select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #2a2f4a;
+      color: white;
+      font-size: 14px;
+    }
+
+    select option {
+      background: #1e293b;
+      color: white;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    button, a {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      text-decoration: none;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .save-btn {
+      background: #10b981;
+      color: white;
+    }
+    .save-btn:hover { background: #059669; }
+
+    .cancel-btn {
+      background: #ef4444;
+      color: white;
+    }
+    .cancel-btn:hover { background: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Edit Member Assignment</h2>
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="member">Member</label>
+        <select name="member" id="member" required>
+          {% for m in members %}
+            <option value="{{ m.id }}" {% if m.id == assignment.member.id %}selected{% endif %}>
+              {{ m.name }} ({{ m.role }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="project">Project</label>
+        <select name="project" id="project" required>
+          {% for p in projects %}
+            <option value="{{ p.id }}" {% if p.id == assignment.project.id %}selected{% endif %}>
+              {{ p.name }} ({{ p.client.Client_name }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="start_date">Start Date</label>
+        <input type="date" name="start_date" id="start_date" value="{{ assignment.start_date|date:'Y-m-d' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="end_date">End Date</label>
+        <input type="date" name="end_date" id="end_date" value="{{ assignment.end_date|date:'Y-m-d' }}">
+      </div>
+
+      <div class="btn-container">
+        <button type="submit" class="save-btn">💾 Save</button>
+        <a href="{% url 'dashboard' %}" class="cancel-btn">✖ Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

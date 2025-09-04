@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Assign Member to Project{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Assign Member to Project</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Member -->
+        <p>
+            <label for="id_member">Member:</label>
+            <select name="member" id="id_member" required style="width:100%;">
+                {% for m in members %}
+                <option value="{{ m.id }}">{{ m.name }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <!-- Project (only active + searchable) -->
+        <p>
+            <label for="id_project">Project:</label>
+            <select name="project" id="id_project" required style="width:100%;">
+                {% for p in projects %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <!-- Dates -->
+        <p>
+            <label for="id_assigned_from">Assigned From:</label>
+            <input type="date" name="assigned_from" id="id_assigned_from">
+        </p>
+        <p>
+            <label for="id_assigned_to">Assigned To:</label>
+            <input type="date" name="assigned_to" id="id_assigned_to">
+        </p>
+
+        <!-- Active (checkbox + label properly aligned) -->
+        <p>
+    <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+        <label for="id_is_active" style="margin:0; color:white;">Active</label>
+        <input type="checkbox" name="is_active" id="id_is_active" style="margin:0;">
+    </div>
+</p>
+
+        <button type="submit">Assign</button>
+    </form>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 CSS & JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Custom Dark Theme for Select2 -->
+<style>
+    /* Dropdown box */
+    .select2-container--default .select2-selection--single {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        color: #fff;
+        position: relative;
+    }
+    /* Placeholder / Selected text */
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #fff;
+        font-weight: 500;
+        line-height: 40px;
+        padding-left: 10px;
+        padding-right: 40px; /* space for clear + arrow */
+    }
+    /* Dropdown arrow */
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        right: 5px;
+    }
+    /* Clear (×) button move to right */
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        position: absolute;
+        right: 25px; /* arrow ke paas */
+        top: 50%;
+        transform: translateY(-50%);
+        margin: 0;
+        font-size: 16px;
+        color: #fff;
+        cursor: pointer;
+    }
+    /* Dropdown panel */
+    .select2-container--default .select2-results>.select2-results__options {
+        background: #1e293b;
+        color: #fff;
+        border-radius: 8px;
+    }
+    /* Options */
+    .select2-container--default .select2-results__option {
+        padding: 10px;
+        transition: background 0.2s ease;
+    }
+    .select2-container--default .select2-results__option--highlighted {
+        background: #3b82f6;
+        color: #fff;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('#id_member').select2({
+            placeholder: "Search Member...",
+            allowClear: true
+        });
+        $('#id_project').select2({
+            placeholder: "Search Project...",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}
+

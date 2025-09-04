@@ -1,0 +1,13 @@
+{% extends "base_glass.html" %}
+{% block title %}Delete Member{% endblock %}
+{% block content %}
+<h2>Delete Member</h2>
+<p>Are you sure you want to delete member <strong>{{ object }}</strong>?</p>
+<form method="post">
+    {% csrf_token %}
+    <div class="actions">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'members_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

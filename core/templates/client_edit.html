@@ -1,0 +1,106 @@
+{% extends "base_glass.html" %}
+{% block title %}Edit Client{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Edit Client</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Client Name -->
+        <label for="Client_name">Client Name</label>
+        <input type="text" id="Client_name" name="Client_name" value="{{ client.Client_name }}" required>
+        
+        <!-- Status Dropdown -->
+        <label for="status">Status</label>
+        <select id="status" name="status" required>
+            {% for key, label in status_choices %}
+                <option value="{{ key }}" {% if client.status == key %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button type="submit" class="btn">Save Changes</button>
+            <a href="{% url 'clients_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-container {
+        background: rgba(255,255,255,0.08);
+        padding: 25px;
+        border-radius: 16px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        max-width: 500px;
+        margin: auto;
+        margin-top: 40px;
+        color: white;
+    }
+    h2 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        color: #fff;
+        text-align: center;
+    }
+    label {
+        display: block;
+        margin-top: 12px;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    input, select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        background: rgba(255,255,255,0.15);
+        color: white;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    input:focus, select:focus {
+        box-shadow: 0 0 8px #60a5fa;
+        background: rgba(255,255,255,0.25);
+    }
+    /* Dropdown option fix */
+    select option {
+        background: #1e293b;
+        color: #f3f4f6;
+    }
+    .actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+    .btn {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+    .btn {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: white;
+    }
+    .btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px #60a5fa;
+    }
+    .btn-secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+    }
+    .btn-secondary:hover {
+        background: rgba(255,255,255,0.35);
+    }
+</style>
+{% endblock %}

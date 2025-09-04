@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Edit Project{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Edit Project</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <p>
+            <label for="id_name">Project Name:</label>
+            <input type="text" id="id_name" name="name" value="{{ project.name }}" required>
+        </p>
+
+        <p>
+            <label for="id_client">Client:</label>
+            <select id="id_client" name="client" required>
+                {% for client in clients %}
+                    <option value="{{ client.id }}" {% if client.id == project.client.id %}selected{% endif %}>
+                        {{ client.Client_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <p>
+            <label for="id_type">Type:</label>
+            <select id="id_type" name="type" required>
+                {% for key, label in type_choices %}
+                    <option value="{{ key }}" {% if key == project.type %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <p>
+            <label for="id_status">Status:</label>
+            <select id="id_status" name="status" required>
+                {% for key, label in status_choices %}
+                    <option value="{{ key }}" {% if key == project.status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <p>
+            <label for="id_start_date">Start Date:</label>
+            <input type="date" id="id_start_date" name="start_date" value="{{ project.start_date|date:'Y-m-d' }}">
+        </p>
+
+        <p>
+            <label for="id_end_date">End Date:</label>
+            <input type="date" id="id_end_date" name="end_date" value="{{ project.end_date|date:'Y-m-d' }}">
+        </p>
+
+        <p>
+            <label for="id_hosting">Hosting Provider:</label>
+            <input type="text" id="id_hosting" name="hosting_provider" value="{{ project.hosting_provider }}">
+        </p>
+
+        <p>
+            <label for="id_github">GitHub Repo:</label>
+            <input type="url" id="id_github" name="github_repo" value="{{ project.github_repo }}">
+        </p>
+
+        <p>
+            <label for="id_live">Live URL:</label>
+            <input type="url" id="id_live" name="live_url" value="{{ project.live_url }}">
+        </p>
+
+        <!-- ✅ Technology/Description -->
+        <p>
+            <label for="id_description">Technology / Description:</label>
+            <textarea id="id_description" name="description" rows="4">{{ project.description }}</textarea>
+        </p>
+
+        <!-- ✅ Project Credentials -->
+        <p>
+            <label>Project Credentials:</label>
+        </p>
+        <div id="credentials-container">
+            {% for cred in project.credentials.all %}
+            <div class="credential-row">
+                <input type="text" name="credentials_key[]" value="{{ cred.key }}" placeholder="Key (e.g. username)">
+                <input type="text" name="credentials_value[]" value="{{ cred.value }}" placeholder="Value (e.g. admin123)">
+            </div>
+            {% empty %}
+            <div class="credential-row">
+                <input type="text" name="credentials_key[]" placeholder="Key (e.g. username)">
+                <input type="text" name="credentials_value[]" placeholder="Value (e.g. admin123)">
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="add-btn" onclick="addCredential()">+ Add Credential</button>
+
+        <div class="actions">
+            <button type="submit">Save Changes</button>
+            <a href="{% url 'projects_list' %}" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 25px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.form-container h2 { 
+    text-align:center; 
+    margin-bottom:20px; 
+    color:#fff;
+}
+form p { margin-bottom: 15px; }
+label { display:block; margin-bottom:6px; font-weight:600; color:#fff; }
+input, select, textarea {
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    outline:none;
+    background:rgba(255,255,255,0.15);
+    color:#fff;
+}
+select option {
+    background:#1e293b;
+    color:#fff;
+}
+input:focus, select:focus, textarea:focus {
+    box-shadow:0 0 8px #60a5fa;
+}
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+.actions {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:20px;
+}
+button {
+    background:linear-gradient(135deg,#3b82f6,#60a5fa);
+    border:none;
+    color:white;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
+button:hover { transform:scale(1.05); }
+.btn-secondary {
+    padding:10px 20px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.2);
+    color:white;
+    text-decoration:none;
+    font-weight:600;
+}
+.btn-secondary:hover { background:rgba(255,255,255,0.3); }
+
+.add-btn {
+    background:#3b82f6;
+    margin-top:-5px;
+    margin-bottom:15px;
+    padding:8px 15px;
+    border:none;
+    border-radius:8px;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+}
+.add-btn:hover { background:#2563eb; }
+.credential-row {
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+}
+.credential-row input {
+    flex:1;
+}
+</style>
+
+<script>
+    function addCredential() {
+        const container = document.getElementById("credentials-container");
+        const div = document.createElement("div");
+        div.classList.add("credential-row");
+        div.innerHTML = `
+            <input type="text" name="credentials_key[]" placeholder="Key (e.g. username)">
+            <input type="text" name="credentials_value[]" placeholder="Value (e.g. admin123)">
+        `;
+        container.appendChild(div);
+    }
+</script>
+{% endblock %}

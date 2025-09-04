@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Add Project Activity{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Add Project Activity</h2>
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            <label for="id_project">Project:</label>
+            <select name="project" id="id_project" required>
+                {% for p in projects %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        <p>
+            <label for="id_status">Status:</label>
+            <select name="status" id="id_status" required>
+                <option value="started">Started</option>
+                <option value="paused">Paused</option>
+                <option value="resumed">Resumed</option>
+                <option value="completed">Completed</option>
+                <option value="on-hold">On-Hold</option>
+            </select>
+        </p>
+        <p>
+            <label for="id_activity_from">Activity From:</label>
+            <input type="date" name="activity_from" id="id_activity_from">
+        </p>
+        <p>
+            <label for="id_activity_to">Activity To:</label>
+            <input type="date" name="activity_to" id="id_activity_to">
+        </p>
+        <p>
+            <label for="id_remarks">Remarks:</label>
+            <textarea name="remarks" id="id_remarks"></textarea>
+        </p>
+        <button type="submit">Save Activity</button>
+    </form>
+</div>
+{% endblock %}

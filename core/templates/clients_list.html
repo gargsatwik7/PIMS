@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clients List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{background:linear-gradient(-45deg,#1a1f36,#2a2f4a,#0f172a,#1e293b);background-size:400% 400%;animation:gradientMove 15s ease infinite;color:white;}
+        @keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        #particles-js{position:fixed;width:100%;height:100%;z-index:-1;}
+        .container{max-width:1200px;margin:auto;padding:20px;}
+        a.back{display:inline-block;margin-bottom:10px;text-decoration:none;color:#60a5fa;font-weight:600;}
+        a.back:hover{color:#93c5fd;}
+        .card{background:rgba(255,255,255,0.1);padding:20px;border-radius:16px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+        h2{margin-bottom:15px;}
+        .search-box{margin-bottom:15px;}
+        .search-box input{padding:10px;width:100%;border:none;border-radius:8px;outline:none;background:rgba(255,255,255,0.15);color:white;}
+        .search-box input:focus{box-shadow:0 0 8px #60a5fa;}
+        table{width:100%;border-collapse:collapse;}
+        table th,table td{padding:12px;text-align:left;color:#f3f4f6;}
+        table th{background-color:rgba(255,255,255,0.1);cursor:pointer;}
+        table tr:hover{background-color:rgba(255,255,255,0.05);}
+        .actions a{margin-right:10px;color:#60a5fa;text-decoration:none;font-weight:600;}
+        .actions a.delete{color:#ef4444;}
+        .actions a:hover{text-decoration:underline;}
+    </style>
+</head>
+<body>
+<div id="particles-js"></div>
+<div class="container">
+    <a class="back" href="/">← Back to Dashboard</a>
+    <div class="card">
+        <h2>All Clients</h2>
+        <div class="search-box"><input type="text" id="searchInput" placeholder="Search clients..."></div>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Client Name</th>
+                    <th>Total Projects</th>
+                    <th>Project Info</th>
+                    {% if request.user.is_superuser or request.user.is_staff %}
+                        <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>{{ client.Client_name }}</td>
+                    <td>{{ client.project_set.count }}</td>
+                    <td>
+                        {% for project in client.project_set.all %}
+                            {{ project.name }} ({{ project.status|title }}){% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% if request.user.is_superuser or request.user.is_staff %}
+                        <td class="actions">
+                            <a href="{% url 'edit_client' client.id %}">Edit</a>
+                            <a href="{% url 'delete_client' client.id %}" class="delete">Delete</a>
+                        </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">No clients found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+document.getElementById("searchInput").addEventListener("input",function(){
+    let filter=this.value.toLowerCase();
+    document.querySelectorAll("#dataTable tbody tr").forEach(row=>{
+        row.style.display=row.innerText.toLowerCase().includes(filter)?"":"none";
+    });
+});
+</script>
+<script>
+particlesJS("particles-js",{particles:{number:{value:50},size:{value:3},move:{speed:1},
+line_linked:{enable:true,distance:150,color:"#fff",opacity:0.3,width:1},color:{value:"#fff"}}});
+</script>
+</body>
+</html>

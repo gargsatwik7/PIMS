@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Project</title>
+    <style>
+        body { background:#1e293b; color:white; font-family:Poppins,sans-serif; }
+        .form-box { 
+            background:rgba(255,255,255,0.1); 
+            padding:20px; 
+            border-radius:12px; 
+            max-width:600px; 
+            margin:auto; 
+            margin-top:40px; 
+        }
+        h2 { margin-bottom:15px; }
+        label { display:block; margin:10px 0 5px; font-weight:600; }
+        input, select, textarea { 
+            width:100%; 
+            padding:10px; 
+            border-radius:8px; 
+            border:none; 
+            margin-bottom:15px; 
+            background:rgba(255,255,255,0.15); 
+            color:white;
+            font-size:15px;
+        }
+        textarea { resize: vertical; min-height:80px; }
+
+        /* ✅ Dropdown Styling */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: rgba(255,255,255,0.15) url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 10px center;
+            background-size: 16px;
+            padding-right: 35px;
+            cursor: pointer;
+        }
+        select option {
+            background:#1e293b;
+            color:white;
+            padding:10px;
+        }
+
+        /* ✅ Custom Client Search Dropdown */
+        .custom-select { position: relative; width: 100%; margin-bottom:15px; }
+        .custom-select input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none; /* hidden by default */
+            z-index: 1000;
+        }
+        .option {
+            padding: 10px;
+            cursor: pointer;
+            color: white;
+        }
+        .option:hover { background: rgba(255,255,255,0.15); }
+
+        /* ✅ Dates side by side with spacing fix */
+        .date-row {
+            display:flex;
+            gap:32px;  /* ✅ proper spacing */
+        }
+        .date-row div { flex:1; }
+        .date-row input[type="date"] {
+            width:100%;
+            border-radius:8px;  /* ✅ prevent overlap */
+            margin:0;
+        }
+
+        /* Buttons */
+        button { 
+            background:#10b981; 
+            padding:10px 20px; 
+            color:white; 
+            border:none; 
+            border-radius:8px; 
+            cursor:pointer; 
+            font-weight:600;
+        }
+        button:hover { background:#059669; }
+        .add-btn { background:#3b82f6; margin-top:-5px; margin-bottom:15px; }
+        .add-btn:hover { background:#2563eb; }
+
+        /* Credentials Row */
+        .credential-row { display:flex; gap:10px; margin-bottom:10px; }
+        .credential-row input { flex:1; }
+
+        a { color:#60a5fa; text-decoration:none; display:inline-block; margin-top:10px; }
+        a:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Add Project</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <label>Name</label>
+            <input type="text" name="name" required>
+
+            <!-- ✅ Client Dropdown with Integrated Search -->
+            <label>Client</label>
+            <div class="custom-select" id="clientDropdown">
+                <input type="text" id="clientSearch" placeholder="Select or search client..." autocomplete="off">
+                <div class="options" id="clientOptions">
+                    {% for c in clients %}
+                        <div class="option" data-value="{{ c.id }}">{{ c.Client_name }}</div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="client" id="clientHidden" required>
+            </div>
+
+            <label>Type</label>
+            <select name="type">
+                <option value="internal">Internal</option>
+                <option value="client">Client</option>
+                <option value="freelance">Freelance</option>
+            </select>
+
+            <label>Status</label>
+            <select name="status">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="hot">Hot</option>
+                <option value="dead">Dead</option>
+            </select>
+
+            <!-- ✅ Start and End Date side by side -->
+            <div class="date-row">
+                <div>
+                    <label>Start Date</label>
+                    <input type="date" name="start_date">
+                </div>
+                <div>
+                    <label>End Date</label>
+                    <input type="date" name="end_date">
+                </div>
+            </div>
+
+            <label>Hosting Provider</label>
+            <input type="text" name="hosting_provider">
+
+            <label>GitHub Repo</label>
+            <input type="url" name="github_repo">
+
+            <label>Live URL</label>
+            <input type="url" name="live_url">
+
+            <!-- ✅ Technology/Description -->
+            <label>Technology / Description</label>
+            <textarea name="description" placeholder="Enter technologies used or project description..."></textarea>
+
+            <!-- ✅ Credentials Section -->
+            <label>Project Credentials</label>
+            <div id="credentials-container">
+                <div class="credential-row">
+                    <input type="text" name="credentials_key[]" placeholder="Key (e.g. username)">
+                    <input type="text" name="credentials_value[]" placeholder="Value (e.g. admin123)">
+                </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addCredential()">+ Add Credential</button>
+
+            <button type="submit">Save Project</button>
+        </form>
+        <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+    </div>
+
+    <script>
+        // ✅ Add new credential row
+        function addCredential() {
+            const container = document.getElementById("credentials-container");
+            const div = document.createElement("div");
+            div.classList.add("credential-row");
+            div.innerHTML = `
+                <input type="text" name="credentials_key[]" placeholder="Key (e.g. username)">
+                <input type="text" name="credentials_value[]" placeholder="Value (e.g. admin123)">
+            `;
+            container.appendChild(div);
+        }
+
+        // ✅ Client dropdown with search
+        const clientSearch = document.getElementById("clientSearch");
+        const clientOptions = document.getElementById("clientOptions");
+        const clientHidden = document.getElementById("clientHidden");
+
+        clientSearch.addEventListener("focus", () => {
+            clientOptions.style.display = "block";
+        });
+
+        clientSearch.addEventListener("keyup", function() {
+            let filter = this.value.toLowerCase();
+            let opts = clientOptions.querySelectorAll(".option");
+            opts.forEach(opt => {
+                let txt = opt.textContent.toLowerCase();
+                opt.style.display = txt.includes(filter) ? "block" : "none";
+            });
+        });
+
+        clientOptions.addEventListener("click", function(e) {
+            if (e.target.classList.contains("option")) {
+                clientSearch.value = e.target.textContent;
+                clientHidden.value = e.target.dataset.value;
+                clientOptions.style.display = "none";
+            }
+        });
+
+        document.addEventListener("click", function(e) {
+            if (!document.getElementById("clientDropdown").contains(e.target)) {
+                clientOptions.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>

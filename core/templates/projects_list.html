@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Projects List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{background:linear-gradient(-45deg,#1a1f36,#2a2f4a,#0f172a,#1e293b);background-size:400% 400%;animation:gradientMove 15s ease infinite;color:white;}
+        @keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        #particles-js{position:fixed;width:100%;height:100%;z-index:-1;}
+        .container{max-width:1200px;margin:auto;padding:20px;}
+        a.back{display:inline-block;margin-bottom:10px;text-decoration:none;color:#60a5fa;font-weight:600;}
+        a.back:hover{color:#93c5fd;}
+        .card{background:rgba(255,255,255,0.1);padding:20px;border-radius:16px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+        h2{margin-bottom:15px;}
+        .search-box{margin-bottom:15px;}
+        .search-box input{padding:10px;width:100%;border:none;border-radius:8px;outline:none;background:rgba(255,255,255,0.15);color:white;}
+        .search-box input:focus{box-shadow:0 0 8px #60a5fa;}
+        table{width:100%;border-collapse:collapse;}
+        table th,table td{padding:12px;text-align:left;color:#f3f4f6;}
+        table th{background-color:rgba(255,255,255,0.1);cursor:pointer;}
+        table tr:hover{background-color:rgba(255,255,255,0.05);}
+        .badge{padding:5px 10px;border-radius:8px;font-size:13px;font-weight:600;display:inline-block;}
+        .internal{background:#3b82f633;color:#3b82f6;}
+        .client{background:#10b98133;color:#10b981;}
+        .freelance{background:#f59e0b33;color:#f59e0b;}
+        .active{background:#10b98133;color:#10b981;}
+        .inactive{background:#6b728033;color:#6b7280;}
+        .hot{background:#ef444433;color:#ef4444;}
+        .dead{background:#f59e0b33;color:#f59e0b;}
+        .actions a{margin-right:10px;color:#60a5fa;text-decoration:none;font-weight:600;}
+        .actions a.delete{color:#ef4444;}
+        .actions a:hover{text-decoration:underline;}
+
+        /* Make only "View Details" links more visible */
+        table td a.view-details {
+            color: #facc15; /* bright yellow */
+            font-weight: 600;
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+        table td a.view-details:hover {
+            color: #fcd34d; /* lighter yellow on hover */
+        }
+
+        .pagination{text-align:center;margin-top:15px;}
+        .pagination button{padding:8px 14px;margin:0 2px;border:none;background:linear-gradient(135deg,#3b82f6,#60a5fa);color:white;border-radius:20px;cursor:pointer;}
+        .pagination button:hover{transform:scale(1.1);}
+        .pagination button.disabled{background:#555;cursor:not-allowed;}
+
+        /* Modal - larger and spaced */
+        .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;}
+        .modal-content{
+            background:#1e293b;
+            padding:30px 40px;
+            border-radius:16px;
+            max-width:900px;
+            width:95%;
+            color:white;
+            position:relative;
+            overflow-y:auto;
+            max-height:90vh;
+        }
+        .modal-content h3{margin-bottom:20px;}
+        .modal-content p{
+            margin-bottom:15px;
+            line-height:1.6;
+            word-break: break-word;
+        }
+        .modal-content strong{
+            display: inline-block;
+            width: 120px; /* aligns labels and values neatly */
+        }
+        .close{position:absolute;top:10px;right:15px;font-size:20px;cursor:pointer;color:#ef4444;}
+        .modal-content a{color:#60a5fa;}
+    </style>
+</head>
+<body>
+<div id="particles-js"></div>
+<div class="container">
+    <a class="back" href="/">← Back to Dashboard</a>
+    <div class="card">
+        <h2>{% if status %} Projects - {{ status|title }} {% else %} All Projects {% endif %}</h2>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search projects...">
+        </div>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Name</th>
+                    <th onclick="sortTable(1)">Type</th>
+                    <th onclick="sortTable(2)">Status</th>
+                    <th>View Details</th>
+                    {% if request.user.is_superuser or request.user.is_staff %}
+                        <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ project.name }}</td>
+                    <td><span class="badge {{ project.type }}">{{ project.get_type_display }}</span></td>
+                    <td><span class="badge {{ project.status }}">{{ project.status|title }}</span></td>
+                    <td>
+                        <a href="javascript:void(0)" class="view-details"
+                           onclick="openModal(
+                               '{{ project.name }}',
+                               '{{ project.hosting_provider|default:"N/A" }}',
+                               '{{ project.live_url|default:"" }}',
+                               '{{ project.github_repo|default:"" }}',
+                               '{{ project.description|default:"-" }}',
+                               `{% if project.credentials.all %}{% for cred in project.credentials.all %}{{ cred.key }} : {{ cred.value }}{% if not forloop.last %}<br>{% endif %}{% endfor %}{% else %}N/A{% endif %}`
+                           )">View Details</a>
+                    </td>
+                    {% if request.user.is_superuser or request.user.is_staff %}
+                        <td class="actions">
+                            <a href="{% url 'edit_project' project.id %}">Edit</a>
+                            <a href="{% url 'delete_project' project.id %}" class="delete">Delete</a>
+                        </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No projects found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="detailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle"></h3>
+        <p><strong>Hosting:</strong> <span id="modalHosting"></span></p>
+        <p><strong>Live URL:</strong> <a href="#" id="modalLive" target="_blank">Visit</a></p>
+        <p><strong>GitHub:</strong> <a href="#" id="modalGithub" target="_blank">Repo</a></p>
+        <p><strong>Technology:</strong> <span id="modalTech"></span></p>
+        <p><strong>Credentials:</strong><br> <span id="modalCreds"></span></p>
+    </div>
+</div>
+
+<script>
+    let rowsPerPage=10,currentPage=1;
+    function renderTable(){
+        let rows=document.querySelectorAll("#dataTable tbody tr");
+        let start=(currentPage-1)*rowsPerPage,end=start+rowsPerPage;
+        rows.forEach((row,i)=>row.style.display=(i>=start&&i<end)?"":"none");
+        renderPagination(rows.length);
+    }
+    function renderPagination(totalRows){
+        let totalPages=Math.ceil(totalRows/rowsPerPage);
+        let pagination=document.getElementById("pagination");
+        pagination.innerHTML="";
+        for(let i=1;i<=totalPages;i++){
+            let btn=document.createElement("button");
+            btn.textContent=i;
+            btn.classList.toggle("disabled",i===currentPage);
+            btn.onclick=()=>{currentPage=i;renderTable();};
+            pagination.appendChild(btn);
+        }
+    }
+    function sortTable(colIndex){
+        let table=document.getElementById("dataTable"),rows=[...table.rows].slice(1);
+        let asc=table.getAttribute("data-sort-dir")==="asc"?false:true;
+        rows.sort((a,b)=>{
+            let x=a.cells[colIndex].innerText.toLowerCase();
+            let y=b.cells[colIndex].innerText.toLowerCase();
+            return asc?x.localeCompare(y):y.localeCompare(x);
+        });
+        rows.forEach(r=>table.tBodies[0].appendChild(r));
+        table.setAttribute("data-sort-dir",asc?"asc":"desc");
+    }
+    document.getElementById("searchInput").addEventListener("input",function(){
+        let filter=this.value.toLowerCase();
+        document.querySelectorAll("#dataTable tbody tr").forEach(row=>{
+            row.style.display=row.innerText.toLowerCase().includes(filter)?"":"none";
+        });
+    });
+    renderTable();
+
+    // Modal functions
+    function openModal(name, hosting, live, github, tech, creds){
+        document.getElementById("modalTitle").innerText = name;
+        document.getElementById("modalHosting").innerText = hosting;
+
+        let liveLink = document.getElementById("modalLive");
+        if(live){ liveLink.href = live; liveLink.style.display="inline"; }
+        else{ liveLink.style.display="none"; }
+
+        let gitLink = document.getElementById("modalGithub");
+        if(github){ gitLink.href = github; gitLink.style.display="inline"; }
+        else{ gitLink.style.display="none"; }
+
+        document.getElementById("modalTech").innerText = tech;
+        document.getElementById("modalCreds").innerHTML = creds;
+        document.getElementById("detailsModal").style.display="flex";
+    }
+    function closeModal(){
+        document.getElementById("detailsModal").style.display="none";
+    }
+</script>
+<script>
+particlesJS("particles-js",{particles:{number:{value:50},size:{value:3},move:{speed:1},
+line_linked:{enable:true,distance:150,color:"#fff",opacity:0.3,width:1},color:{value:"#fff"}}});
+</script>
+</body>
+</html>
